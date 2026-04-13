@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Viral-Loop Architect 🧬</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: '#ff4b4b',
+                        surface: 'rgba(30, 41, 59, 0.7)',
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Plotly.js for Visuals -->
+    <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+    <style>
+        .glass {
+            background: rgba(30, 41, 59, 0.4);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+    </style>
+</head>
+<body class="bg-gray-950 text-gray-100 font-sans min-h-screen bg-[url('https://www.transparenttextures.com/patterns/dark-matter.png')]">
+
+    <!-- Navbar -->
+    <nav class="glass sticky top-0 z-50 w-full border-b border-gray-800">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <span class="text-2xl">🧬</span>
+                <span class="font-bold text-xl tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-red-500 to-orange-500">
+                    Viral-Loop Architect V3
+                </span>
+            </div>
+            <div class="text-sm text-gray-400">Powered by NVIDIA NIM & Llama-3</div>
+        </div>
+    </nav>
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 grid grid-cols-1 lg:grid-cols-12 gap-8">
+        
+        <!-- Left Sidebar Options -->
+        <div class="lg:col-span-4 space-y-6">
+            <div class="glass p-6 rounded-2xl shadow-xl">
+                <h2 class="text-lg font-semibold mb-4 text-white">Target Parameters</h2>
+                
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-400 mb-1">Platform Format</label>
+                        <select id="platformSelect" class="w-full bg-gray-900 border border-gray-700 rounded-lg p-2.5 text-white focus:ring-brand focus:border-brand">
+                            <option value="YouTube Long-form">YouTube Long-form</option>
+                            <option value="YouTube Shorts">YouTube Shorts</option>
+                            <option value="TikTok">TikTok</option>
+                            <option value="Instagram Reels">Instagram Reels</option>
+                        </select>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-400 mb-1">Target Vibe</label>
+                        <select id="vibeSelect" class="w-full bg-gray-900 border border-gray-700 rounded-lg p-2.5 text-white focus:ring-brand focus:border-brand">
+                            <option value="Educational">Educational</option>
+                            <option value="Entertaining">Entertaining</option>
+                            <option value="Aggressive">Aggressive</option>
+                            <option value="Storytelling">Storytelling</option>
+                            <option value="Dramatic">Dramatic</option>
+                        </select>
+                    </div>
+
+                    <div class="pt-4 border-t border-gray-800">
+                        <label class="block text-sm font-medium text-gray-400 mb-2">Extraction Source</label>
+                        <div class="flex gap-4">
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="radio" name="source" value="text" checked class="text-brand focus:ring-brand accent-brand">
+                                <span class="text-sm">Paste Text</span>
+                            </label>
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="radio" name="source" value="url" class="text-brand focus:ring-brand accent-brand">
+                                <span class="text-sm">YouTube URL</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Input Area Block -->
+            <div class="glass p-6 rounded-2xl shadow-xl">
+                <div id="textInputGroup">
+                    <label class="block text-sm font-medium text-gray-400 mb-2">Pasted Transcript Hook</label>
+                    <textarea id="transcriptText" rows="5" class="w-full bg-gray-900 border border-gray-700 rounded-lg p-3 text-white placeholder-gray-600 focus:ring-brand focus:border-brand transition" placeholder="Most people think working hard is the key to success. But they are wrong..."></textarea>
+                </div>
+                
+                <div id="urlInputGroup" class="hidden">
+                    <label class="block text-sm font-medium text-gray-400 mb-2">YouTube Video URL</label>
+                    <input type="url" id="ytUrl" class="w-full bg-gray-900 border border-gray-700 rounded-lg p-3 text-white placeholder-gray-600 focus:ring-brand focus:border-brand transition" placeholder="https://youtube.com/watch?v=...">
+                </div>
+
+                <button id="analyzeBtn" class="mt-6 w-full bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-500 hover:to-orange-500 text-white font-bold py-3 px-4 rounded-xl shadow-lg transform transition hover:scale-105 active:scale-95 flex items-center justify-center gap-2">
+                    <span>🚀 Analyze Viral Potential</span>
+                </button>
+            </div>
+            
+            <div id="statusAlert" class="hidden rounded-xl p-4 text-sm font-medium"></div>
+        </div>
+
+        <!-- Right Dashboard Layout -->
+        <div class="lg:col-span-8 flex flex-col gap-6">
+            
+            <!-- Loading Overlay -->
+            <div id="loadingOverlay" class="hidden flex-col items-center justify-center h-full min-h-[400px] glass rounded-3xl border border-gray-800">
+                <div class="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-brand mb-4"></div>
+                <h3 class="text-xl font-semibold bg-clip-text text-transparent bg-gradient-to-r from-red-500 to-orange-500 animate-pulse">Running AI Retention Algorithms...</h3>
+                <p class="text-gray-400 mt-2 text-sm text-center px-8">Parsing psychology, scoring parameters, and evaluating audience drop-off over the NVIDIA network.</p>
+            </div>
+
+            <!-- Real Dashboard -->
+            <div id="dashboardFrame" class="hidden space-y-6">
+                <!-- Top Row: Score & Pacing -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="glass p-6 rounded-2xl relative overflow-hidden">
+                        <div class="absolute top-0 right-0 p-4 opacity-10 text-6xl">🎯</div>
+                        <h3 class="text-gray-400 font-medium tracking-wide text-sm mb-1 uppercase">Retention Score</h3>
+                        <div class="flex items-end gap-3">
+                            <span id="scoreVal" class="text-6xl font-bold text-white tracking-tighter">0</span>
+                            <span class="text-gray-500 text-2xl font-bold mb-2">/100</span>
+                        </div>
+                        <div id="scoreDelta" class="mt-2 text-sm font-medium px-2 py-1 rounded inline-flex"></div>
+                    </div>
+
+                    <div class="glass p-6 rounded-2xl relative overflow-hidden">
+                        <h3 class="text-gray-400 font-medium tracking-wide text-sm mb-4 uppercase">Content Analytics</h3>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <p class="text-xs text-gray-500 mb-1">Pacing Cues</p>
+                                <p id="pacingVal" class="font-semibold text-lg text-blue-400">-</p>
+                            </div>
+                            <div>
+                                <p class="text-xs text-gray-500 mb-1">Core Emotion</p>
+                                <p id="emotionVal" class="font-semibold text-lg text-emerald-400">-</p>
+                            </div>
+                            <div>
+                                <p class="text-xs text-gray-500 mb-1">Questions Asked</p>
+                                <p id="questionVal" class="font-semibold text-lg text-amber-400">-</p>
+                            </div>
+                            <div>
+                                <p class="text-xs text-gray-500 mb-1">Target Persona</p>
+                                <p class="font-semibold text-sm text-purple-400 truncate w-full" id="personaVal">-</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Psychology Tagline -->
+                <div class="glass p-5 rounded-2xl border-l-4 border-l-brand">
+                    <span class="text-xs text-brand uppercase tracking-wider font-bold block mb-1">Detected Trigger Strategy</span>
+                    <p id="triggerVal" class="text-lg text-gray-200 font-medium"></p>
+                </div>
+                
+                <!-- Graph Row -->
+                <div class="glass p-6 rounded-2xl">
+                    <h3 class="text-gray-400 font-medium tracking-wide text-sm mb-4 uppercase">Simulated First-30s Audience Drop-off</h3>
+                    <div class="relative h-64 w-full">
+                        <div id="retentionChart" style="width:100%;height:100%;"></div>
+                    </div>
+                </div>
+
+                <!-- Outputs Row -->
+                <div class="glass p-6 rounded-2xl">
+                    <h3 class="text-gray-400 font-medium tracking-wide text-sm mb-4 uppercase">AI Optimized Variations</h3>
+                    <div id="variationText" class="prose prose-invert max-w-none text-gray-300 font-serif leading-relaxed whitespace-pre-wrap"></div>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <script>
+        // UI Logic
+        const sourceRadios = document.querySelectorAll('input[name="source"]');
+        const textGroup = document.getElementById('textInputGroup');
+        const urlGroup = document.getElementById('urlInputGroup');
+
+        sourceRadios.forEach(radio => {
+            radio.addEventListener('change', (e) => {
+                if(e.target.value === 'text') {
+                    textGroup.classList.remove('hidden');
+                    urlGroup.classList.add('hidden');
+                } else {
+                    textGroup.classList.add('hidden');
+                    urlGroup.classList.remove('hidden');
+                }
+            });
+        });
+
+        // Chart Instance
+        let currentChart = null;
+
+        // Button Action
+        document.getElementById('analyzeBtn').addEventListener('click', async () => {
+            const btn = document.getElementById('analyzeBtn');
+            const status = document.getElementById('statusAlert');
+            const dashboard = document.getElementById('dashboardFrame');
+            const loading = document.getElementById('loadingOverlay');
+
+            const source = document.querySelector('input[name="source"]:checked').value;
+            const transcript = document.getElementById('transcriptText').value;
+            const yt_url = document.getElementById('ytUrl').value;
+            const platform = document.getElementById('platformSelect').value;
+            const vibe = document.getElementById('vibeSelect').value;
+
+            // Reset UI
+            status.classList.add('hidden');
+            dashboard.classList.add('hidden');
+            loading.classList.remove('hidden');
+            btn.disabled = true;
+            btn.classList.add('opacity-50', 'cursor-not-allowed');
+
+            try {
+                const response = await fetch('/api/analyze', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ source, transcript, yt_url, platform, vibe })
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.detail || "Unknown server error");
+                }
+
+                // Render Dashboard
+                renderDashboard(data);
+                
+                setTimeout(() => {
+                    loading.classList.add('hidden');
+                    dashboard.classList.remove('hidden');
+                }, 800) // Slight pure visual buffer for premium feel
+
+            } catch (err) {
+                loading.classList.add('hidden');
+                status.classList.remove('hidden');
+                status.classList.add('bg-red-900/50', 'text-red-200', 'border', 'border-red-700');
+                status.innerHTML = `⚠️ <b>Error:</b> ${err.message}`;
+            } finally {
+                btn.disabled = false;
+                btn.classList.remove('opacity-50', 'cursor-not-allowed');
+            }
+        });
+
+        function renderDashboard(data) {
+            // Populate score
+            const sc = data.score;
+            document.getElementById('scoreVal').innerText = sc;
+            
+            const deltaEl = document.getElementById('scoreDelta');
+            if(sc >= 80) {
+                deltaEl.innerText = "+ High Virality Potential";
+                deltaEl.className = "mt-2 text-sm font-bold px-3 py-1 bg-green-500/20 text-green-400 rounded-lg inline-flex";
+            } else if(sc < 50) {
+                deltaEl.innerText = "- Low Catch Rate";
+                deltaEl.className = "mt-2 text-sm font-bold px-3 py-1 bg-red-500/20 text-red-400 rounded-lg inline-flex";
+            } else {
+                deltaEl.innerText = "Average Target Base";
+                deltaEl.className = "mt-2 text-sm font-bold px-3 py-1 bg-amber-500/20 text-amber-400 rounded-lg inline-flex";
+            }
+
+            // Populate features
+            const f = data.features;
+            document.getElementById('pacingVal').innerText = f['Pacing'] || 'Medium';
+            document.getElementById('emotionVal').innerText = f['Core Emotion'] || 'Unknown';
+            document.getElementById('questionVal').innerText = f['Question Count'] || '0';
+            document.getElementById('personaVal').innerText = f['Target Persona'] || 'General';
+            document.getElementById('triggerVal').innerText = f['Trigger Strategy'] || 'Generic Hook';
+            
+            // Variations
+            let vText = data.variations;
+            vText = vText.replace(/\*\*(.*?)\*\*/g, '<b class="text-white">$1</b>');
+            vText = vText.replace(/\n/g, '<br>');
+            document.getElementById('variationText').innerHTML = vText;
+
+            // Generate Chart
+            generateChart(sc, f['Pacing'] || 'Medium');
+        }
+
+        function generateChart(score, pacing) {
+            // Generate simulated curve data
+            let drop_factor = 1.0;
+            let pacingLower = pacing.toLowerCase();
+            if (pacingLower.includes("slow")) drop_factor = 2.5;
+            else if (pacingLower.includes("medium")) drop_factor = 1.5;
+            else drop_factor = 0.8;
+            
+            const base_drop = (100 - score) / 100.0;
+            const xLabels = [];
+            const yData = [];
+            for (let i = 0; i <= 30; i++) {
+                xLabels.push(i + "s");
+                let ret = Math.max(0, 100 * Math.exp(-drop_factor * base_drop * i / 10));
+                yData.push(ret);
+            }
+
+            var plotData = [{
+                x: xLabels,
+                y: yData,
+                type: 'scatter',
+                mode: 'lines',
+                line: {
+                    color: '#ff4b4b',
+                    width: 3,
+                    shape: 'spline'
+                },
+                fill: 'tozeroy',
+                fillcolor: 'rgba(255, 75, 75, 0.1)'
+            }];
+
+            var layout = {
+                paper_bgcolor: 'rgba(0,0,0,0)',
+                plot_bgcolor: 'rgba(0,0,0,0)',
+                margin: { t: 10, r: 10, b: 30, l: 40 },
+                xaxis: {
+                    showgrid: false,
+                    color: '#9ca3af'
+                },
+                yaxis: {
+                    range: [0, 100],
+                    gridcolor: 'rgba(255,255,255,0.05)',
+                    color: '#9ca3af'
+                }
+            };
+
+            var config = { responsive: true, displayModeBar: false };
+            Plotly.newPlot('retentionChart', plotData, layout, config);
+        }
+    </script>
+</body>
+</html>

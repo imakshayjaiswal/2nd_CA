@@ -1,0 +1,6 @@
+fastapi==0.100.0
+uvicorn==0.23.1
+pydantic==2.0.2
+openai
+youtube-transcript-api
+python-dotenv
