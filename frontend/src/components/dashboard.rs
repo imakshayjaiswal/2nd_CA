@@ -45,6 +45,20 @@ pub fn Dashboard() -> impl IntoView {
     let (loading, set_loading) = create_signal(false);
     let (error, set_error) = create_signal::<Option<String>>(None);
 
+    let toast_news = vec![
+        "🚨 BREAKING: 80C limit revision discussions begin.",
+        "📊 MARKET: Nifty crosses 23,000 for the first time.",
+        "💡 TIP: Invest in ELSS before March 31st for max benefits."
+    ];
+    let (toast_idx, set_toast_idx) = create_signal(0);
+    
+    let toast_len = toast_news.len();
+
+    // Rotate notification on dashboard every 15 mins (using 900s)
+    set_interval_with_handle(move || {
+        set_toast_idx.update(|i| *i = (*i + 1) % toast_len);
+    }, std::time::Duration::from_secs(900)).unwrap();
+
     // ── Form Submit Handler ──
     let on_calculate = move |_| {
         let income: f64 = income_ref.get().map(|el| el.value().parse().unwrap_or(0.0)).unwrap_or(0.0);
@@ -89,7 +103,13 @@ pub fn Dashboard() -> impl IntoView {
     };
 
     view! {
-        <div class="dashboard-grid">
+        <div class="dashboard-grid relative-grid">
+            // ── MARKET TOAST NOTIFICATION ──────────────────────────
+            <div class="market-toast">
+                <span class="toast-dot"></span>
+                <span class="toast-text">{move || toast_news[toast_idx.get()]}</span>
+            </div>
+
             // ── INPUT SECTION ──────────────────────────────────────
             <div class="glass-card input-card">
                 <h2 class="card-title">"Estimate Your Taxes"</h2>

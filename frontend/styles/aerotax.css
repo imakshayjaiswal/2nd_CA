@@ -734,6 +734,42 @@ body {
 }
 .btn-source-link:hover { text-decoration: underline; }
 
+/* ── Market Toast Notification (Dashboard) ────────────────── */
+.market-toast {
+  position: absolute;
+  top: -4rem;
+  right: 0;
+  background: var(--bg-deep);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--border-radius-sm);
+  padding: 0.6rem 1.2rem;
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  box-shadow: var(--shadow-sm);
+  animation: fade-in-up 0.5s ease-out;
+  z-index: 10;
+}
+
+.toast-dot {
+  width: 8px;
+  height: 8px;
+  background: var(--cyan);
+  border-radius: 50%;
+  animation: pulse 2s infinite;
+}
+
+.toast-text {
+  font-family: 'Space Mono', monospace;
+  font-size: 0.8rem;
+  color: var(--text-primary);
+  font-weight: 500;
+}
+
+.relative-grid {
+  position: relative;
+}
+
 /* ── Inline Preset Buttons ──────────────────────────────────── */
 .preset-buttons {
   display: flex;
