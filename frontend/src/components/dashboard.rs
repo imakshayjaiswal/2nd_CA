@@ -152,18 +152,18 @@ pub fn Dashboard() -> impl IntoView {
                         <div class={
                             let better = r.better_regime.clone();
                             move || format!("regime-card {}", if better == "new" { "regime-card--best" } else { "" })
-                        } style=move || if r.better_regime == "new" { "border-color: var(--accent); background: var(--accent-dim); box-shadow: 0 0 20px var(--accent-glow);" } else { "" }>
+                        } style=move || if r.better_regime.clone() == "new" { "border-color: var(--accent); background: var(--accent-dim); box-shadow: 0 0 20px var(--accent-glow);" } else { "" }>
                             <div class="regime-name">"New Regime"</div>
                             <div class="regime-tax">{ format!("₹{:.0}", r.new_regime_tax) }</div>
-                            {if r.better_regime == "new" { view! { <div class="regime-badge" style="background: var(--accent);">"✓ Optimal"</div> }.into_view() } else { ().into_view() }}
+                            {let better = r.better_regime.clone(); move || if better == "new" { view! { <div class="regime-badge" style="background: var(--accent);">"✓ Optimal"</div> }.into_view() } else { ().into_view() }}
                         </div>
                         <div class={
                             let better = r.better_regime.clone();
                             move || format!("regime-card {}", if better == "old" { "regime-card--best" } else { "" })
-                        } style=move || if r.better_regime == "old" { "border-color: var(--accent); background: var(--accent-dim); box-shadow: 0 0 20px var(--accent-glow);" } else { "" }>
+                        } style=move || if r.better_regime.clone() == "old" { "border-color: var(--accent); background: var(--accent-dim); box-shadow: 0 0 20px var(--accent-glow);" } else { "" }>
                             <div class="regime-name">"Old Regime"</div>
                             <div class="regime-tax">{ format!("₹{:.0}", r.old_regime_tax) }</div>
-                            {if r.better_regime == "old" { view! { <div class="regime-badge" style="background: var(--accent);">"✓ Optimal"</div> }.into_view() } else { ().into_view() }}
+                            {let better = r.better_regime.clone(); move || if better == "old" { view! { <div class="regime-badge" style="background: var(--accent);">"✓ Optimal"</div> }.into_view() } else { ().into_view() }}
                         </div>
                     </div>
 
