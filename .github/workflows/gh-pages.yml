@@ -29,7 +29,8 @@ jobs:
       - name: Build Frontend
         run: |
           cd frontend
-          trunk build --release --public-url /2nd_CA/
+          cd frontend
+          trunk build --release --public-url /2nd_CA/ --no-wasm-opt
 
       - name: Deploy to GitHub Pages
         uses: JamesIves/github-pages-deploy-action@v4
