@@ -123,7 +123,7 @@ pub fn UploadZone() -> impl IntoView {
                 if let (Some(orig), Some(comp)) = (s.original_kb, s.compressed_kb) {
                     let saving = ((orig - comp) / orig * 100.0).max(0.0);
                     return view! {
-                        <div class="glass-card card-float compression-stats">
+                        <div class="glass-card compression-stats">
                             <h3 class="card-title">"WASM Compression Results"</h3>
                             <div class="stats-grid">
                                 <div class="stat-item">
@@ -147,7 +147,7 @@ pub fn UploadZone() -> impl IntoView {
 
             // ── AI Analysis Result ─────────────────────────────────
             {move || analysis_result.get().map(|r| view! {
-                <div class="glass-card card-float analysis-result">
+                <div class="glass-card analysis-result">
                     <h3 class="card-title">"AI Invoice Analysis"<span class="ai-badge">"Gemini"</span></h3>
                     <pre class="analysis-text">{ r }</pre>
                 </div>

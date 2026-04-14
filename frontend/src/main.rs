@@ -49,13 +49,6 @@ pub fn App() -> impl IntoView {
         // Leptos Router for SPA navigation
         <Router>
             <div class="aerotax-shell">
-                // ── Animated ambient background ──
-                <div class="ambient-bg">
-                    <div class="orb orb-1"></div>
-                    <div class="orb orb-2"></div>
-                    <div class="orb orb-3"></div>
-                </div>
-
                 // ── Navigation ──
                 <NavBar />
 

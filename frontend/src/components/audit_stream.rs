@@ -111,7 +111,7 @@ pub fn AuditStream() -> impl IntoView {
     view! {
         <div class="audit-container">
             // ── Controls ──────────────────────────────────────────
-            <div class="glass-card card-float audit-controls">
+            <div class="glass-card audit-controls">
                 <h3 class="card-title">"Transaction Input"</h3>
                 <textarea
                     class="audit-textarea"
