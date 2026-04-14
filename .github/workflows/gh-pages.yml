@@ -4,7 +4,7 @@ on:
   push:
     branches: [ main ]
     paths:
-      - 'frontend/dist/**'
+      - 'frontend/**'
       - '.github/workflows/gh-pages.yml'
 
 permissions:
