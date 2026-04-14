@@ -24,9 +24,12 @@ jobs:
           sudo mv trunk /usr/local/bin/
 
       - name: Build Frontend
+        env:
+          TRUNK_SKIP_WASM_OPT: "true"
+          RUSTFLAGS: "-C target-feature=-bulk-memory"
         run: |
           cd frontend
-          trunk build --release --public-url /2nd_CA/ --wasm-opt false
+          trunk build --release --public-url /2nd_CA/
 
       - name: Deploy to GitHub Pages
         uses: JamesIves/github-pages-deploy-action@v4
