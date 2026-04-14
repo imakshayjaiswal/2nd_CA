@@ -10,7 +10,6 @@ use leptos_router::*;
 #[component]
 pub fn NavBar() -> impl IntoView {
     // Track which page is active for highlight effect
-    let location = use_location();
 
     view! {
         <nav class="navbar glass-card">

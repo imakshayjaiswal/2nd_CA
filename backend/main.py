@@ -38,19 +38,35 @@ log = logging.getLogger("aerotax")
 # ──────────────────────────────────────────────────────────────
 # SECTION 1: LOAD C SHARED LIBRARY VIA CTYPES
 # ──────────────────────────────────────────────────────────────
-import sys, os
+import sys, os, ctypes, platform
+from pathlib import Path
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "engine"))
-from engine_py import py_calculate_tax, py_detect_outliers, py_compare_regimes
+from engine_py import py_calculate_tax as py_calc_tax, py_detect_outliers as py_det_outliers, py_compare_regimes as py_comp_regimes  # type: ignore
 
-log.info("✅ Python engine loaded (engine_py.py)")
+ENGINE = None
+engine_dir = Path(os.path.dirname(__file__)).parent / "engine"
+system = platform.system()
+lib_name = "engine.dll" if system == "Windows" else "engine.dylib" if system == "Darwin" else "engine.so"
+lib_path = engine_dir / lib_name
 
-# Compatibility wrapper so the rest of main.py is unchanged
-def c_calculate_tax(income: float, deductions: float) -> float:
-    return py_calculate_tax(income, deductions)
+if lib_path.exists():
+    try:
+        ENGINE = ctypes.CDLL(str(lib_path))
+        ENGINE.py_calculate_tax.argtypes = [ctypes.c_double, ctypes.c_double]
+        ENGINE.py_calculate_tax.restype = ctypes.c_double
 
-def c_detect_outliers(transactions: list, threshold: float):
-    result = py_detect_outliers(transactions, threshold)
-    return result["flags"], result["count"], result["mean"], result["std_dev"]
+        ENGINE.py_detect_outliers.argtypes = [ctypes.POINTER(ctypes.c_double), ctypes.c_int, ctypes.c_double, ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_double), ctypes.POINTER(ctypes.c_double)]
+        ENGINE.py_detect_outliers.restype = ctypes.c_int
+
+        ENGINE.py_compare_regimes.argtypes = [ctypes.c_double, ctypes.c_double, ctypes.POINTER(ctypes.c_double), ctypes.POINTER(ctypes.c_double)]
+        ENGINE.py_compare_regimes.restype = ctypes.c_int
+        log.info(f"⚡ C engine loaded successfully! ({lib_name})")
+    except Exception as e:
+        log.warning(f"⚠️ Failed to load C engine: {e}")
+        ENGINE = None
+
+if not ENGINE:
+    log.info("✅ Python engine loaded as fallback (engine_py.py)")
 
 
 
@@ -174,7 +190,7 @@ class RegimeCompareRequest(BaseModel):
 
 
 class AnomalyRequest(BaseModel):
-    transactions: list[float] = Field(..., min_items=1)
+    transactions: list[float] = Field(..., min_length=1)
     threshold: float = Field(3.0, gt=0, description="Z-score threshold (default=3)")
 
 
@@ -204,34 +220,25 @@ def c_calculate_tax(income: float, deductions: float) -> float:
     """Calls C engine; falls back to Python implementation if unavailable."""
     if ENGINE:
         return ENGINE.py_calculate_tax(income, deductions)
-    # Python fallback (simplified)
-    log.warning("Using Python fallback for tax calculation")
-    taxable = max(0.0, income - deductions - 75000)
-    if taxable <= 700000:
-        return 0.0
-    if taxable <= 1500000:
-        return taxable * 0.20 * 1.04
-    return (taxable * 0.30) * 1.04
+    return py_calc_tax(income, deductions)
 
 
 def c_detect_outliers(transactions: list[float], threshold: float):
     """Calls C engine for Z-score anomaly detection."""
-    size = len(transactions)
-    arr   = (ctypes.c_double * size)(*transactions)
-    flags = (ctypes.c_int    * size)()
-    mean  = ctypes.c_double(0.0)
-    std   = ctypes.c_double(0.0)
+    if not transactions:
+        return [], 0, 0.0, 0.0
 
     if ENGINE:
+        size = len(transactions)
+        arr   = (ctypes.c_double * size)(*transactions)
+        flags = (ctypes.c_int    * size)()
+        mean  = ctypes.c_double(0.0)
+        std   = ctypes.c_double(0.0)
         count = ENGINE.py_detect_outliers(arr, size, threshold, flags, ctypes.byref(mean), ctypes.byref(std))
         return list(flags), count, mean.value, std.value
 
-    # Python NumPy fallback
-    log.warning("Using NumPy fallback for outlier detection")
-    arr_np = np.array(transactions)
-    m, s   = arr_np.mean(), arr_np.std()
-    flag_list = [1 if abs(x - m) / (s + 1e-9) > threshold else 0 for x in transactions]
-    return flag_list, sum(flag_list), float(m), float(s)
+    result = py_det_outliers(transactions, threshold)
+    return result["flags"], result["count"], result["mean"], result["std_dev"]
 
 
 # ──────────────────────────────────────────────────────────────
@@ -258,14 +265,13 @@ async def calculate_tax(req: TaxRequest):
     new_tax = c_calculate_tax(req.income, req.deductions)
 
     # Old regime comparison
-    old_new = ctypes.c_double(0.0)
-    old_old = ctypes.c_double(0.0)
     if ENGINE:
-        ENGINE.py_compare_regimes(req.income, req.deductions,
-                                   ctypes.byref(old_new), ctypes.byref(old_old))
+        old_new = ctypes.c_double(0.0)
+        old_old = ctypes.c_double(0.0)
+        ENGINE.py_compare_regimes(req.income, req.deductions, ctypes.byref(old_new), ctypes.byref(old_old))
         old_tax = old_old.value
     else:
-        old_tax = c_calculate_tax(req.income, req.deductions * 0.8)  # rough fallback
+        old_tax = py_comp_regimes(req.income, req.deductions)["old_regime_tax"]
 
     elapsed_ms = (time.perf_counter() - t0) * 1000
 

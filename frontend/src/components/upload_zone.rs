@@ -140,9 +140,9 @@ pub fn UploadZone() -> impl IntoView {
                                 </div>
                             </div>
                         </div>
-                    }.into_any();
+                    }.into_view();
                 }
-                ().into_any()
+                ().into_view()
             }}
 
             // ── AI Analysis Result ─────────────────────────────────
@@ -224,7 +224,7 @@ fn compress_image_wasm(
 
             // Export as JPEG at 0.7 quality (approx 60-70% size reduction)
             let compressed_data = canvas_clone
-                .to_data_url_with_type_and_encoderoptions("image/jpeg", &JsValue::from_f64(0.7))
+                .to_data_url_with_type_and_encoder_options("image/jpeg", &JsValue::from_f64(0.7))
                 .unwrap();
 
             let compressed_kb = (compressed_data.len() as f64 * 0.75) / 1024.0; // base64 overhead

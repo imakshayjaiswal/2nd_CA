@@ -147,19 +147,21 @@ pub fn Dashboard() -> impl IntoView {
                     </div>
 
                     <div class="regime-cards">
-                        <div class=move || format!("regime-card {}",
-                            if r.better_regime == "new" { "regime-card--best" } else { "" })
-                        >
+                        <div class={
+                            let better = r.better_regime.clone();
+                            move || format!("regime-card {}", if better == "new" { "regime-card--best" } else { "" })
+                        }>
                             <div class="regime-name">"New Regime"</div>
-                            <div class="regime-tax">{ format!("₹{:,.0}", r.new_regime_tax) }</div>
-                            {if r.better_regime == "new" { view! { <div class="regime-badge">"✓ Optimal"</div> }.into_any() } else { ().into_any() }}
+                            <div class="regime-tax">{ format!("₹{:.0}", r.new_regime_tax) }</div>
+                            {if r.better_regime == "new" { view! { <div class="regime-badge">"✓ Optimal"</div> }.into_view() } else { ().into_view() }}
                         </div>
-                        <div class=move || format!("regime-card {}",
-                            if r.better_regime == "old" { "regime-card--best" } else { "" })
-                        >
+                        <div class={
+                            let better = r.better_regime.clone();
+                            move || format!("regime-card {}", if better == "old" { "regime-card--best" } else { "" })
+                        }>
                             <div class="regime-name">"Old Regime"</div>
-                            <div class="regime-tax">{ format!("₹{:,.0}", r.old_regime_tax) }</div>
-                            {if r.better_regime == "old" { view! { <div class="regime-badge">"✓ Optimal"</div> }.into_any() } else { ().into_any() }}
+                            <div class="regime-tax">{ format!("₹{:.0}", r.old_regime_tax) }</div>
+                            {if r.better_regime == "old" { view! { <div class="regime-badge">"✓ Optimal"</div> }.into_view() } else { ().into_view() }}
                         </div>
                     </div>
 
@@ -175,7 +177,7 @@ pub fn Dashboard() -> impl IntoView {
                     <h2 class="card-title">"AI Tax Optimizer"<span class="ai-badge">"Gemini"</span></h2>
                     <div class="savings-display">
                         <span class="savings-label">"Potential Savings"</span>
-                        <span class="savings-amount">{ format!("₹{:,.0}", o.savings) }</span>
+                        <span class="savings-amount">{ format!("₹{:.0}", o.savings) }</span>
                     </div>
                     <div class="rag-sections">
                         <span class="rag-label">"Sections Applied: "</span>
@@ -200,11 +202,11 @@ async fn fetch_post(path: &str, body: &serde_json::Value) -> Result<serde_json::
     let url = format!("{}{}", base_url, path);
 
     let mut opts = RequestInit::new();
-    opts.method("POST");
-    opts.mode(RequestMode::Cors);
+    opts.set_method("POST");
+    opts.set_mode(RequestMode::Cors);
 
     let body_str = serde_json::to_string(body).map_err(|e| e.to_string())?;
-    opts.body(Some(&JsValue::from_str(&body_str)));
+    opts.set_body(&JsValue::from_str(&body_str));
 
     let request = Request::new_with_str_and_init(&url, &opts)
         .map_err(|e| format!("{:?}", e))?;

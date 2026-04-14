@@ -66,7 +66,6 @@ pub fn AuditStream() -> impl IntoView {
                 "threshold": 3.0
             });
 
-            let window = web_sys::window().unwrap();
             // Simple fetch for demo
             let response = gloo_net::http::Request::post("http://localhost:8000/detect-anomalies")
                 .header("Content-Type", "application/json")
@@ -153,7 +152,7 @@ pub fn AuditStream() -> impl IntoView {
                             <div class="audit-empty">
                                 <span>"🔄 Awaiting transaction data..."</span>
                             </div>
-                        }.into_any();
+                        }.into_view();
                     }
                     txns.into_iter().map(|tx| {
                         let flagged = tx.flagged;
@@ -165,14 +164,14 @@ pub fn AuditStream() -> impl IntoView {
                                 <div class="tx-zscore">{ format!("z={:.2}", tx.z_score) }</div>
                                 <div class="tx-flag">
                                     {if flagged {
-                                        view! { <span class="flag-badge">"⚠ FLAGGED"</span> }.into_any()
+                                        view! { <span class="flag-badge">"⚠ FLAGGED"</span> }.into_view()
                                     } else {
-                                        view! { <span class="ok-badge">"✓"</span> }.into_any()
+                                        view! { <span class="ok-badge">"✓"</span> }.into_view()
                                     }}
                                 </div>
                             </div>
                         }
-                    }).collect_view().into_any()
+                    }).collect_view().into_view()
                 }}
             </div>
         </div>
