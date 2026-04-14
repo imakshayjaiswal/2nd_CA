@@ -734,36 +734,48 @@ body {
 }
 .btn-source-link:hover { text-decoration: underline; }
 
-/* ── Market Toast Notification (Dashboard) ────────────────── */
-.market-toast {
-  position: absolute;
-  top: -4rem;
-  right: 0;
-  background: var(--bg-deep);
-  border: 1px solid var(--glass-border);
-  border-radius: var(--border-radius-sm);
-  padding: 0.6rem 1.2rem;
+/* ── Market Intel Cloud (Navbar Integrated) ────────────────── */
+.nav-status-group {
   display: flex;
-  align-items: center;
-  gap: 0.8rem;
-  box-shadow: var(--shadow-sm);
-  animation: fade-in-up 0.5s ease-out;
-  z-index: 10;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.2rem;
+  position: relative;
 }
 
-.toast-dot {
-  width: 8px;
-  height: 8px;
-  background: var(--cyan);
-  border-radius: 50%;
-  animation: pulse 2s infinite;
+.nav-intel-cloud {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.2rem;
+  pointer-events: none;
 }
 
-.toast-text {
+.nav-intel-item {
   font-family: 'Space Mono', monospace;
-  font-size: 0.8rem;
-  color: var(--text-primary);
-  font-weight: 500;
+  font-size: 0.65rem;
+  color: var(--text-muted);
+  background: var(--bg-surface);
+  border: 1px solid var(--glass-border);
+  border-radius: 4px;
+  padding: 0.1rem 0.4rem;
+  white-space: nowrap;
+  animation: nav-intel-drift 8s ease-in-out infinite;
+  opacity: 0;
+}
+
+.nav-intel-item:nth-child(1) { animation-delay: 0s; }
+.nav-intel-item:nth-child(2) { animation-delay: 2.5s; }
+.nav-intel-item:nth-child(3) { animation-delay: 5s; }
+
+@keyframes nav-intel-drift {
+  0% { transform: translate(10px, 0); opacity: 0; }
+  10% { transform: translate(0, 0); opacity: 1; }
+  90% { transform: translate(-5px, 0); opacity: 1; }
+  100% { transform: translate(-15px, 0); opacity: 0; }
 }
 
 .relative-grid {

@@ -9,7 +9,30 @@ use leptos_router::*;
 
 #[component]
 pub fn NavBar() -> impl IntoView {
-    // Track which page is active for highlight effect
+    let intel_news = vec![
+        "🚨 80C limit update pending",
+        "📊 Markets at record high",
+        "💡 Tax deadline approaching",
+        "📰 GST council meet today",
+        "📈 Tech stocks rally continues",
+        "🔔 New tax slab proposed",
+        "💼 RBI holds repo rate",
+        "🏦 Digital rupee surge"
+    ];
+    let (idx, set_idx) = create_signal(0);
+    
+    set_interval_with_handle(move || {
+        set_idx.update(|i| *i = (*i + 1) % intel_news.len());
+    }, std::time::Duration::from_secs(4)).unwrap();
+
+    let display_items = move || {
+        let current = idx.get();
+        vec![
+            intel_news[current],
+            intel_news[(current + 1) % intel_news.len()],
+            intel_news[(current + 2) % intel_news.len()],
+        ]
+    };
 
     view! {
         <nav class="navbar glass-card">
@@ -46,9 +69,16 @@ pub fn NavBar() -> impl IntoView {
             </ul>
 
             // ── Status Indicator ────────────────────────────────
-            <div class="nav-status">
-                <div class="status-dot status-dot--live"></div>
-                <span class="status-text">"Engine Online"</span>
+            <div class="nav-status-group">
+                <div class="nav-status">
+                    <div class="status-dot status-dot--live"></div>
+                    <span class="status-text">"Engine Online"</span>
+                </div>
+                <div class="nav-intel-cloud">
+                    {move || display_items().into_iter().map(|item| {
+                        view! { <span class="nav-intel-item">{ item }</span> }
+                    }).collect_view()}
+                </div>
             </div>
         </nav>
     }

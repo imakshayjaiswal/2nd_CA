@@ -13,7 +13,10 @@ pub fn NewsCloud() -> impl IntoView {
         ("Moneycontrol", "Verified", "45 mins ago", "Rupee stabilizes against the dollar following robust FII inflows this week."),
         ("NDTV Profit", "Verified", "1 hr ago", "Real estate sector sees 22% surge in housing sales due to favorable home loan rates."),
         ("Zee Business", "Verified", "2 hrs ago", "Mutual Fund SIP accounts cross a record 10 Crore milestone nationwide."),
-        ("ET Now", "Verified", "3 hrs ago", "Electric vehicle subsidies heavily discussed for upcoming green-tax incentives.")
+        ("ET Now", "Verified", "3 hrs ago", "Electric vehicle subsidies heavily discussed for upcoming green-tax incentives."),
+        ("Business Standard", "Verified", "4 hrs ago", "SME IPOs oversubscribed by 150x, hinting at a massive shift in retail risk appetite."),
+        ("The Hindu", "Verified", "5 hrs ago", "New agriculture tax waivers expected to boost rural economy and consumption patterns."),
+        ("Financial Express", "Verified", "6 hrs ago", "FDI in manufacturing hits all-time high, driving infrastructure and IT sector growth.")
     ];
 
     let (news, set_news) = create_signal(all_news.clone());
