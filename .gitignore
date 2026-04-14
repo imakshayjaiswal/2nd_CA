@@ -30,7 +30,7 @@ var/
 # Rust & WASM
 target/
 frontend/target/
-frontend/dist/
+# frontend/dist/ is committed for GitHub Pages deployment
 frontend/Cargo.lock
 **/*.rs.bk
 
