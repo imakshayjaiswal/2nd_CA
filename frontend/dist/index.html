@@ -10,8 +10,8 @@
   <!-- Trunk picks up these data-trunk directives automatically -->
   
 <script type="module">
-import init, * as bindings from '/aerotax-cbe948d961f73bc8.js';
-const wasm = await init({ module_or_path: '/aerotax-cbe948d961f73bc8_bg.wasm' });
+import init, * as bindings from '/aerotax-afa789b2c9f3ccb7.js';
+const wasm = await init({ module_or_path: '/aerotax-afa789b2c9f3ccb7_bg.wasm' });
 
 
 window.wasmBindings = bindings;
@@ -20,11 +20,11 @@ window.wasmBindings = bindings;
 dispatchEvent(new CustomEvent("TrunkApplicationStarted", {detail: {wasm}}));
 
 </script>
-  <link rel="stylesheet" href="/aerotax-3dfd9f0cbd5917db.css" integrity="sha384-V/rdnV74o2To3RE4qo+03zCVetjNvPBBI0fILU4rNOWUdv8b9VQb8Fu5cuSA/EHY"/>
+  <link rel="stylesheet" href="/aerotax-845898aef58539a.css" integrity="sha384-rU4rotwXilrZpcsrVA8SbOknqjtN6N9dXegAWmO1wBr/FMwonoUb0SJLmRaC0WGD"/>
 
   <!-- Favicon (emoji fallback) -->
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚡</text></svg>" />
-<link rel="modulepreload" href="/aerotax-cbe948d961f73bc8.js" crossorigin="anonymous" integrity="sha384-Kw0H0Ago5eTbsEbmH+ImzjKfQghcays7XllpnTVcAXPiUynird6tV23eaFOC1PNS"><link rel="preload" href="/aerotax-cbe948d961f73bc8_bg.wasm" crossorigin="anonymous" integrity="sha384-CubSHBDUHv4dFQizV+9pk3KWjxpgiT30Df6W/xkbWKXYCLFuPqL/Ffioho9f3edD" as="fetch" type="application/wasm"></head>
+<link rel="modulepreload" href="/aerotax-afa789b2c9f3ccb7.js" crossorigin="anonymous" integrity="sha384-Kw0H0Ago5eTbsEbmH+ImzjKfQghcays7XllpnTVcAXPiUynird6tV23eaFOC1PNS"><link rel="preload" href="/aerotax-afa789b2c9f3ccb7_bg.wasm" crossorigin="anonymous" integrity="sha384-OWy5f5w0AmkQwFa615KnyRK4L563/WlzVsrSrmmxQMEhDmUqaVsUfaeE3ZRGwnZX" as="fetch" type="application/wasm"></head>
 <body>
   <!-- Leptos mounts here via mount_to_body() -->
   <!-- Loading splash (hidden once WASM loads) -->

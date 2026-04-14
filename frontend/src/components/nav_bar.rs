@@ -32,7 +32,6 @@ pub fn NavBar() -> impl IntoView {
         vec![
             intel_news[current],
             intel_news[(current + 1) % intel_len],
-            intel_news[(current + 2) % intel_len],
         ]
     };
 
