@@ -16,29 +16,30 @@ pub fn NavBar() -> impl IntoView {
             // ── Brand ──────────────────────────────────────────
             <div class="nav-brand">
                 <div class="nav-logo">
-                    <span class="logo-icon">"⚡"</span>
                     <span class="logo-text">"Aero"<span class="logo-accent">"Tax"</span></span>
                 </div>
-                <div class="nav-tagline">"AI-Powered CA"</div>
+                <div class="nav-tagline">"Tax Intelligence"</div>
             </div>
 
             // ── Navigation Links ────────────────────────────────
             <ul class="nav-links">
                 <li>
                     <A href="/" class="nav-link" active_class="nav-link--active">
-                        <span class="nav-icon">"📊"</span>
                         <span>"Dashboard"</span>
                     </A>
                 </li>
                 <li>
                     <A href="/audit" class="nav-link" active_class="nav-link--active">
-                        <span class="nav-icon">"🔍"</span>
-                        <span>"AuditStream"</span>
+                        <span>"Audit"</span>
+                    </A>
+                </li>
+                <li>
+                    <A href="/news" class="nav-link" active_class="nav-link--active">
+                        <span>"Market Intel"</span>
                     </A>
                 </li>
                 <li>
                     <A href="/upload" class="nav-link" active_class="nav-link--active">
-                        <span class="nav-icon">"📁"</span>
                         <span>"Upload"</span>
                     </A>
                 </li>

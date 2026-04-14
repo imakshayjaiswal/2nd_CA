@@ -92,9 +92,9 @@ pub fn Dashboard() -> impl IntoView {
         <div class="dashboard-grid">
             // ── INPUT SECTION ──────────────────────────────────────
             <div class="glass-card input-card">
-                <h2 class="card-title">"Calculate Tax Liability"</h2>
+                <h2 class="card-title">"Estimate Your Taxes"</h2>
                 <div class="form-group">
-                    <label class="form-label">"Annual Income (₹)"</label>
+                    <label class="form-label">"Your Yearly Earnings (₹)"</label>
                     <input
                         node_ref=income_ref
                         type="number"
@@ -102,9 +102,14 @@ pub fn Dashboard() -> impl IntoView {
                         placeholder="e.g. 1500000"
                         id="income-input"
                     />
+                    <div class="preset-buttons">
+                        <button type="button" class="btn-preset" on:click=move |_| if let Some(el) = income_ref.get() { el.set_value("1000000"); }>"10L"</button>
+                        <button type="button" class="btn-preset" on:click=move |_| if let Some(el) = income_ref.get() { el.set_value("1500000"); }>"15L"</button>
+                        <button type="button" class="btn-preset" on:click=move |_| if let Some(el) = income_ref.get() { el.set_value("3000000"); }>"30L"</button>
+                    </div>
                 </div>
                 <div class="form-group">
-                    <label class="form-label">"Total Deductions (₹)"</label>
+                    <label class="form-label">"Your Tax-Saving Investments (₹)"</label>
                     <input
                         node_ref=deductions_ref
                         type="number"
@@ -112,6 +117,11 @@ pub fn Dashboard() -> impl IntoView {
                         placeholder="e.g. 150000"
                         id="deductions-input"
                     />
+                    <div class="preset-buttons">
+                        <button type="button" class="btn-preset" on:click=move |_| if let Some(el) = deductions_ref.get() { el.set_value("50000"); }>"Standard"</button>
+                        <button type="button" class="btn-preset" on:click=move |_| if let Some(el) = deductions_ref.get() { el.set_value("150000"); }>"80C Max"</button>
+                        <button type="button" class="btn-preset" on:click=move |_| if let Some(el) = deductions_ref.get() { el.set_value("200000"); }>"80C+NPS"</button>
+                    </div>
                 </div>
 
                 {move || error.get().map(|e| view! {
@@ -124,14 +134,14 @@ pub fn Dashboard() -> impl IntoView {
                     disabled=loading
                     id="calculate-btn"
                 >
-                    {move || if loading.get() { "Computing..." } else { "⚡ Calculate & Optimize" }}
+                    {move || if loading.get() { "Calculating..." } else { "Calculate Estimate" }}
                 </button>
             </div>
 
             // ── TAX RESULT CARD ────────────────────────────────────
             {move || tax_result.get().map(|r| view! {
                 <div class="glass-card result-card">
-                    <h2 class="card-title">"Tax Analysis"</h2>
+                    <h2 class="card-title">"Your Tax Breakdown"</h2>
 
                     // 3D-style tax gauge
                     <div class="tax-gauge">
@@ -176,7 +186,7 @@ pub fn Dashboard() -> impl IntoView {
             // ── AI OPTIMIZATION CARD ───────────────────────────────
             {move || opt_result.get().map(|o| view! {
                 <div class="glass-card optimization-card">
-                    <h2 class="card-title">"AI Tax Optimizer"<span class="ai-badge">"Gemini"</span></h2>
+                    <h2 class="card-title">"Smart Suggestions"<span class="ai-badge">"AI"</span></h2>
                     <div class="savings-display">
                         <span class="savings-label">"Potential Savings"</span>
                         <span class="savings-amount">{ format!("₹{:.0}", o.savings) }</span>

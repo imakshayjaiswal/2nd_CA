@@ -5,3 +5,4 @@ pub mod dashboard;
 pub mod audit_stream;
 pub mod upload_zone;
 pub mod nav_bar;
+pub mod news_cloud;

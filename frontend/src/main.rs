@@ -22,6 +22,7 @@ use components::{
     audit_stream::AuditStream,
     upload_zone::UploadZone,
     nav_bar::NavBar,
+    news_cloud::NewsCloud,
 };
 
 // ─── Main Entry Point ────────────────────────────────────────────────────────
@@ -57,6 +58,7 @@ pub fn App() -> impl IntoView {
                     <Routes>
                         <Route path="/"         view=DashboardPage />
                         <Route path="/audit"    view=AuditPage />
+                        <Route path="/news"     view=NewsPage />
                         <Route path="/upload"   view=UploadPage />
                         <Route path="/*any"     view=NotFound />
                     </Routes>
@@ -71,7 +73,7 @@ pub fn App() -> impl IntoView {
 #[component]
 fn DashboardPage() -> impl IntoView {
     view! {
-        <div class="page-container fade-in">
+        <div class="page-container fade-in" style="padding-bottom: 4rem;">
             <header class="hero-section">
                 <div class="hero-badge">
                     <span class="status-dot"></span>
@@ -81,6 +83,15 @@ fn DashboardPage() -> impl IntoView {
                 <p class="subtitle">"Harness the power of AI and real-time C-computation to minimize your liability and maximize your savings."</p>
             </header>
             <Dashboard />
+        </div>
+    }
+}
+
+#[component]
+fn NewsPage() -> impl IntoView {
+    view! {
+        <div class="page-container fade-in">
+            <NewsCloud />
         </div>
     }
 }

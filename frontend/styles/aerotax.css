@@ -633,6 +633,131 @@ body {
   color: var(--text-muted);
 }
 
+/* ── News Cloud / Intelligent Market Feed ────────────────────── */
+.news-cloud-container {
+  padding: 4rem 1rem;
+  max-width: 1200px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.cloud-title {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 3rem;
+}
+
+.news-cloud-grid {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.news-card {
+  background: var(--bg-deep);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--border-radius-sm);
+  padding: 1.5rem;
+  width: calc(33% - 1.5rem);
+  min-width: 300px;
+  text-align: left;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  animation: cloud-float 8s ease-in-out infinite;
+}
+
+.news-card:nth-child(even) { animation-delay: -4s; transform: translateY(20px); }
+.news-card:nth-child(3n) { animation-delay: -2s; transform: translateY(-10px); }
+
+@keyframes cloud-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+
+.news-card:hover {
+  box-shadow: var(--shadow-hover);
+  border-color: var(--cyan);
+  animation-play-state: paused;
+}
+
+.news-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.8rem;
+  flex-wrap: wrap;
+}
+
+.news-source {
+  font-family: 'Space Mono', monospace;
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--bg-deep);
+  background: var(--text-primary);
+  padding: 0.2rem 0.6rem;
+  border-radius: 12px;
+  text-transform: uppercase;
+}
+
+.news-verified {
+  font-size: 0.7rem;
+  color: var(--emerald);
+  font-weight: 700;
+}
+
+.news-time {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  font-family: 'Space Mono', monospace;
+  margin-left: auto;
+}
+
+.news-headline {
+  font-size: 1.05rem;
+  font-weight: 500;
+  color: var(--text-primary);
+  line-height: 1.4;
+  margin-bottom: 1rem;
+}
+
+.btn-source-link {
+  background: transparent;
+  border: none;
+  font-family: 'Space Mono', monospace;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--cyan);
+  cursor: pointer;
+}
+.btn-source-link:hover { text-decoration: underline; }
+
+/* ── Inline Preset Buttons ──────────────────────────────────── */
+.preset-buttons {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.btn-preset {
+  background: var(--bg-void);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--border-radius-sm);
+  padding: 0.2rem 0.6rem;
+  font-size: 0.7rem;
+  cursor: pointer;
+  color: var(--text-secondary);
+  transition: var(--transition);
+  font-family: 'Space Mono', monospace;
+}
+
+.btn-preset:hover {
+  border-color: var(--cyan);
+  color: var(--cyan);
+}
+
 .flag-badge {
   font-size: 0.7rem;
   padding: 0.2rem 0.6rem;
