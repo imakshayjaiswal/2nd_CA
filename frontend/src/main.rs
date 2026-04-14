@@ -48,7 +48,7 @@ pub fn App() -> impl IntoView {
         <Meta name="description" content="AeroTax: Instant AI tax optimization, audit detection, and invoice processing for India — powered by Gemini AI and real-time C computation."/>
 
         // Leptos Router for SPA navigation
-        <Router>
+        <Router base="/2nd_CA">
             <div class="aerotax-shell">
                 // ── Navigation ──
                 <NavBar />
@@ -56,13 +56,11 @@ pub fn App() -> impl IntoView {
                 // ── Route Views ──
                 <main class="main-content">
                     <Routes>
-                        <Route path="/2nd_CA"         view=DashboardPage />
-                        <Route path="/2nd_CA/"        view=DashboardPage />
-                        <Route path="/2nd_CA/audit"   view=AuditPage />
-                        <Route path="/2nd_CA/news"    view=NewsPage />
-                        <Route path="/2nd_CA/upload"  view=UploadPage />
-                        <Route path="/"               view=DashboardPage />
-                        <Route path="/*any"            view=NotFound />
+                        <Route path="/"         view=DashboardPage />
+                        <Route path="/audit"    view=AuditPage />
+                        <Route path="/news"     view=NewsPage />
+                        <Route path="/upload"   view=UploadPage />
+                        <Route path="/*any"     view=NotFound />
                     </Routes>
                 </main>
             </div>
