@@ -21,16 +21,18 @@ pub fn NavBar() -> impl IntoView {
     ];
     let (idx, set_idx) = create_signal(0);
     
+    let intel_len = intel_news.len();
+
     set_interval_with_handle(move || {
-        set_idx.update(|i| *i = (*i + 1) % intel_news.len());
+        set_idx.update(|i| *i = (*i + 1) % intel_len);
     }, std::time::Duration::from_secs(4)).unwrap();
 
     let display_items = move || {
         let current = idx.get();
         vec![
             intel_news[current],
-            intel_news[(current + 1) % intel_news.len()],
-            intel_news[(current + 2) % intel_news.len()],
+            intel_news[(current + 1) % intel_len],
+            intel_news[(current + 2) % intel_len],
         ]
     };
 
