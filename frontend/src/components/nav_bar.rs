@@ -25,7 +25,7 @@ pub fn NavBar() -> impl IntoView {
 
     set_interval_with_handle(move || {
         set_idx.update(|i| *i = (*i + 1) % intel_len);
-    }, std::time::Duration::from_secs(4)).unwrap();
+    }, std::time::Duration::from_secs(60)).unwrap();
 
     let display_items = move || {
         let current = idx.get();
