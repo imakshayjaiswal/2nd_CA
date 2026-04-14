@@ -21,15 +21,17 @@ jobs:
         with:
           targets: wasm32-unknown-unknown
 
-      - name: Download & Install Trunk
+      - name: Install Trunk
         run: |
-          wget -qO- https://github.com/trunk-rs/trunk/releases/latest/download/trunk-x86_64-unknown-linux-gnu.tar.gz | tar -xzf-
+          TRUNK_VERSION="v0.21.12"
+          wget -qO- "https://github.com/trunk-rs/trunk/releases/download/${TRUNK_VERSION}/trunk-x86_64-unknown-linux-gnu.tar.gz" | tar -xzf-
+          chmod +x trunk
           mv trunk /usr/local/bin/
 
       - name: Build Frontend
         run: |
           cd frontend
-          trunk build --release --public-url /2nd_CA/
+          trunk build --release --public-url /2nd_CA/ --no-sri
 
       - name: Deploy to GitHub Pages
         uses: JamesIves/github-pages-deploy-action@v4
