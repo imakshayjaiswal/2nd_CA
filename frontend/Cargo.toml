@@ -1,0 +1,51 @@
+[package]
+name = "aerotax-frontend"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[[bin]]
+name = "aerotax"
+path = "src/main.rs"
+
+[dependencies]
+# Leptos framework + router + metadata
+leptos          = { version = "0.6", features = ["csr"] }
+leptos_meta     = { version = "0.6" }
+leptos_router   = { version = "0.6" }
+
+# WASM + Web APIs
+wasm-bindgen         = "0.2"
+wasm-bindgen-futures = "0.4"
+web-sys              = { version = "0.3", features = [
+  "Window", "Document", "Element", "HtmlElement", "HtmlInputElement",
+  "HtmlCanvasElement", "HtmlImageElement", "CanvasRenderingContext2d",
+  "DragEvent", "DataTransfer", "FileList", "File", "FileReader",
+  "Request", "RequestInit", "RequestMode", "Response", "Headers",
+  "Performance",
+]}
+js-sys = "0.3"
+
+# HTTP client for WASM
+gloo-net = { version = "0.5", features = ["http"] }
+
+# Serialization
+serde             = { version = "1", features = ["derive"] }
+serde_json        = "1"
+serde-wasm-bindgen = "0.6"
+
+# Error diagnostics in browser
+console_error_panic_hook = "0.1"
+
+[profile.release]
+# Optimize WASM for size
+opt-level     = "z"
+lto           = true
+codegen-units = 1
+panic         = "abort"
+strip         = true
+
+[profile.dev]
+opt-level = 1

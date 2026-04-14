@@ -1,0 +1,31 @@
+# AeroTax Backend Dependencies
+# Install: pip install -r requirements.txt
+
+# ── Web Framework ──────────────────────────────────────────────
+fastapi==0.111.0
+uvicorn[standard]==0.29.0      # ASGI server with auto-reload
+
+# ── File Handling ──────────────────────────────────────────────
+python-multipart==0.0.9        # For File upload endpoints
+
+# ── Data Processing ────────────────────────────────────────────
+pandas==2.2.2
+numpy==1.26.4
+
+# ── HTTP Client (for LLM API calls) ───────────────────────────
+httpx==0.27.0
+
+# ── AI / LLM ──────────────────────────────────────────────────
+google-generativeai==0.7.0     # Gemini 1.5 Pro (real integration)
+
+# ── Vector Database (RAG pipeline) ────────────────────────────
+pinecone-client==4.1.0         # Pinecone vector DB
+sentence-transformers==3.0.1   # Local embeddings
+
+# ── Validation & Config ────────────────────────────────────────
+pydantic==2.7.1
+pydantic-settings==2.2.1
+python-dotenv==1.0.1
+
+# ── Development Utilities ──────────────────────────────────────
+rich==13.7.1                   # Pretty terminal output
