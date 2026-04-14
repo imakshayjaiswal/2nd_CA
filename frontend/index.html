@@ -43,6 +43,10 @@
       });
       observer.observe(document.body, { childList: true, subtree: true });
     });
+
+    // Production API URL Hook
+    // Replace this with your actual Render/Backend URL once deployed
+    window.AEROTAX_API_URL = window.AEROTAX_API_URL || "http://localhost:8000";
   </script>
 </body>
 </html>

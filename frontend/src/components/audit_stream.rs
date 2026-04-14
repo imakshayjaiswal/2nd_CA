@@ -66,8 +66,14 @@ pub fn AuditStream() -> impl IntoView {
                 "threshold": 3.0
             });
 
+            let base_url = js_sys::Reflect::get(&window, &wasm_bindgen::JsValue::from_str("AEROTAX_API_URL"))
+                .unwrap_or(wasm_bindgen::JsValue::from_str("http://localhost:8000"))
+                .as_string()
+                .unwrap_or_else(|| "http://localhost:8000".to_string());
+            let url = format!("{}/detect-anomalies", base_url);
+
             // Simple fetch for demo
-            let response = gloo_net::http::Request::post("http://localhost:8000/detect-anomalies")
+            let response = gloo_net::http::Request::post(&url)
                 .header("Content-Type", "application/json")
                 .body(serde_json::to_string(&body).unwrap())
                 .unwrap()
