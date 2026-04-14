@@ -197,8 +197,8 @@ async fn fetch_post(path: &str, body: &serde_json::Value) -> Result<serde_json::
     use wasm_bindgen::JsValue;
     use web_sys::{Request, RequestInit, RequestMode, Response};
     use wasm_bindgen_futures::JsFuture;
-    let window = web_sys::window().ok_or("No window")?;
-    let base_url = js_sys::Reflect::get(&window, &wasm_bindgen::JsValue::from_str("AEROTAX_API_URL"))
+    let win = web_sys::window().ok_or("No window")?;
+    let base_url = js_sys::Reflect::get(&win, &wasm_bindgen::JsValue::from_str("AEROTAX_API_URL"))
         .unwrap_or(wasm_bindgen::JsValue::from_str("http://localhost:8000"))
         .as_string()
         .unwrap_or_else(|| "http://localhost:8000".to_string());
