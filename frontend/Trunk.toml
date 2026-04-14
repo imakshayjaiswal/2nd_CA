@@ -1,2 +1,3 @@
 [optimize]
 wasm_opt = false
+# Deployment trigger: 2026-04-15
