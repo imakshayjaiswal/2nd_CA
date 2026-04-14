@@ -136,11 +136,13 @@ pub fn Dashboard() -> impl IntoView {
                     // 3D-style tax gauge
                     <div class="tax-gauge">
                         <div class="gauge-circle" style=format!(
-                            "background: conic-gradient(var(--cyan) {}%, var(--glass-border) 0)",
+                            "background: conic-gradient(var(--accent) {}%, var(--glass-border) 0)",
                             (r.effective_rate_pct * 3.33).min(100.0)
                         )>
                             <div class="gauge-inner">
-                                <span class="gauge-value">{ format!("{:.1}%", r.effective_rate_pct) }</span>
+                                <span class="gauge-value" style="color: var(--accent); text-shadow: 0 0 20px var(--accent-glow);">
+                                    { format!("{:.1}%", r.effective_rate_pct) }
+                                </span>
                                 <span class="gauge-label">"Effective Rate"</span>
                             </div>
                         </div>
@@ -150,18 +152,18 @@ pub fn Dashboard() -> impl IntoView {
                         <div class={
                             let better = r.better_regime.clone();
                             move || format!("regime-card {}", if better == "new" { "regime-card--best" } else { "" })
-                        }>
+                        } style=move || if r.better_regime == "new" { "border-color: var(--accent); background: var(--accent-dim); box-shadow: 0 0 20px var(--accent-glow);" } else { "" }>
                             <div class="regime-name">"New Regime"</div>
                             <div class="regime-tax">{ format!("₹{:.0}", r.new_regime_tax) }</div>
-                            {if r.better_regime == "new" { view! { <div class="regime-badge">"✓ Optimal"</div> }.into_view() } else { ().into_view() }}
+                            {if r.better_regime == "new" { view! { <div class="regime-badge" style="background: var(--accent);">"✓ Optimal"</div> }.into_view() } else { ().into_view() }}
                         </div>
                         <div class={
                             let better = r.better_regime.clone();
                             move || format!("regime-card {}", if better == "old" { "regime-card--best" } else { "" })
-                        }>
+                        } style=move || if r.better_regime == "old" { "border-color: var(--accent); background: var(--accent-dim); box-shadow: 0 0 20px var(--accent-glow);" } else { "" }>
                             <div class="regime-name">"Old Regime"</div>
                             <div class="regime-tax">{ format!("₹{:.0}", r.old_regime_tax) }</div>
-                            {if r.better_regime == "old" { view! { <div class="regime-badge">"✓ Optimal"</div> }.into_view() } else { ().into_view() }}
+                            {if r.better_regime == "old" { view! { <div class="regime-badge" style="background: var(--accent);">"✓ Optimal"</div> }.into_view() } else { ().into_view() }}
                         </div>
                     </div>
 

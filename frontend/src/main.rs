@@ -79,10 +79,14 @@ pub fn App() -> impl IntoView {
 fn DashboardPage() -> impl IntoView {
     view! {
         <div class="page-container fade-in">
-            <div class="page-header">
-                <h1 class="glow-text">"Tax Dashboard"</h1>
-                <p class="subtitle">"Real-time liability visualization powered by AeroTax AI"</p>
-            </div>
+            <header class="hero-section">
+                <div class="hero-badge">
+                    <span class="status-dot"></span>
+                    <span>"Next-Gen Tax Intelligence Live"</span>
+                </div>
+                <h1 class="glow-text">"Future of Tax" <br/> "Optimization"</h1>
+                <p class="subtitle">"Harness the power of AI and real-time C-computation to minimize your liability and maximize your savings."</p>
+            </header>
             <Dashboard />
         </div>
     }
