@@ -1,0 +1,28 @@
+# Environment
+.venv/
+.env
+.ipynb_checkpoints/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+build/
+dist/
+*.egg-info/
+
+# Rust
+target/
+frontend/target/
+frontend/dist/
+frontend/Cargo.lock
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Engine
+engine/engine.dll
+engine/engine.so
+engine/engine.dylib

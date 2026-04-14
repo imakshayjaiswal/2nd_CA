@@ -38,56 +38,21 @@ log = logging.getLogger("aerotax")
 # ──────────────────────────────────────────────────────────────
 # SECTION 1: LOAD C SHARED LIBRARY VIA CTYPES
 # ──────────────────────────────────────────────────────────────
-ENGINE_DIR = Path(__file__).parent / "engine"
+import sys, os
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "engine"))
+from engine_py import py_calculate_tax, py_detect_outliers, py_compare_regimes
 
-def _load_engine() -> ctypes.CDLL:
-    """
-    Loads the compiled C shared library.
+log.info("✅ Python engine loaded (engine_py.py)")
 
-    Compile before running:
-      Linux/Mac:  gcc -O3 -shared -fPIC -o engine/engine.so engine/engine.c -lm -lpthread
-      Windows:    gcc -O3 -shared -o engine/engine.dll engine/engine.c -lm
-    """
-    suffix = ".dll" if platform.system() == "Windows" else ".so"
-    lib_path = ENGINE_DIR / f"engine{suffix}"
+# Compatibility wrapper so the rest of main.py is unchanged
+def c_calculate_tax(income: float, deductions: float) -> float:
+    return py_calculate_tax(income, deductions)
 
-    if not lib_path.exists():
-        log.warning(
-            f"⚠️  C engine not found at {lib_path}. "
-            "Running in MOCK MODE — compile engine.c first."
-        )
-        return None  # Graceful degradation
-
-    lib = ctypes.CDLL(str(lib_path))
-
-    # ── py_calculate_tax(income: double, deductions: double) -> double ──
-    lib.py_calculate_tax.argtypes  = [ctypes.c_double, ctypes.c_double]
-    lib.py_calculate_tax.restype   = ctypes.c_double
-
-    # ── py_detect_outliers(...) -> int ──
-    lib.py_detect_outliers.argtypes = [
-        ctypes.POINTER(ctypes.c_double),  # transactions
-        ctypes.c_int,                     # size
-        ctypes.c_double,                  # threshold
-        ctypes.POINTER(ctypes.c_int),     # out_flags
-        ctypes.POINTER(ctypes.c_double),  # out_mean
-        ctypes.POINTER(ctypes.c_double),  # out_std
-    ]
-    lib.py_detect_outliers.restype = ctypes.c_int
-
-    # ── py_compare_regimes(...) -> int ──
-    lib.py_compare_regimes.argtypes = [
-        ctypes.c_double, ctypes.c_double,
-        ctypes.POINTER(ctypes.c_double),
-        ctypes.POINTER(ctypes.c_double),
-    ]
-    lib.py_compare_regimes.restype = ctypes.c_int
-
-    log.info(f"✅ C engine loaded from {lib_path}")
-    return lib
+def c_detect_outliers(transactions: list, threshold: float):
+    result = py_detect_outliers(transactions, threshold)
+    return result["flags"], result["count"], result["mean"], result["std_dev"]
 
 
-ENGINE: Optional[ctypes.CDLL] = _load_engine()
 
 
 # ──────────────────────────────────────────────────────────────

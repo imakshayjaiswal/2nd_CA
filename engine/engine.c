@@ -1,274 +1,227 @@
 /**
  * AeroTax Calculation Engine (engine.c)
  * ======================================
- * High-performance, thread-safe C library for financial data processing.
- * Implements Indian tax slab calculations and statistical anomaly detection.
+ * Indian tax slab calculation + statistical anomaly detection.
  *
- * Compile (Linux/Mac):
- *   gcc -O3 -march=native -ffast-math -shared -fPIC -o engine.so engine.c -lm -lpthread
+ * ZERO external includes. All standard functions declared manually.
+ * The linker resolves them from the C runtime — no headers needed.
  *
- * Compile (Windows):
- *   gcc -O3 -shared -o engine.dll engine.c -lm
+ * Compile - Windows:
+ *   gcc -O2 -std=c99 -shared -o engine.dll engine.c
+ *
+ * Compile - Linux/Mac:
+ *   gcc -O2 -std=c99 -shared -fPIC -o engine.so engine.c
  */
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <math.h>
-#include <pthread.h>
-#include <stdint.h>
+/* ==========================================================================
+ * SECTION 0: MANUAL RUNTIME DECLARATIONS  (replaces all #include)
+ * The linker always finds these in the C runtime (msvcrt / glibc).
+ * ========================================================================== */
 
-/* -------------------------------------------------------------------------
- * SECTION 1: INDIAN TAX SLAB CONSTANTS (FY 2024-25 New Regime)
- * ------------------------------------------------------------------------- */
+typedef unsigned long long aero_size;
 
-#define REBATE_LIMIT    700000.0   /* Section 87A: Full rebate up to ₹7L income */
-#define SURCHARGE_10    5000000.0  /* 10% surcharge above ₹50L */
-#define SURCHARGE_15   10000000.0  /* 15% surcharge above ₹1Cr */
-#define CESS_RATE           0.04   /* 4% Health & Education Cess */
+void *malloc (aero_size size);
+void  free   (void *ptr);
+void *memcpy (void *dst, const void *src, aero_size n);
+void *memset (void *dst, int c, aero_size n);
 
-typedef struct {
-    double lower;
-    double upper;
-    double rate;
-} TaxSlab;
+/* calloc = malloc + memset */
+static void *aero_calloc(int n, aero_size elem)
+{
+    aero_size total = (aero_size)n * elem;
+    void *p = malloc(total);
+    if (p) memset(p, 0, total);
+    return p;
+}
 
-/* New Tax Regime Slabs (FY 2024-25) */
-static const TaxSlab NEW_REGIME_SLABS[] = {
-    {0.0,      300000.0,  0.00},
-    {300000.0, 600000.0,  0.05},
-    {600000.0, 900000.0,  0.10},
-    {900000.0, 1200000.0, 0.15},
-    {1200000.0,1500000.0, 0.20},
-    {1500000.0, -1.0,     0.30}   /* -1 means "no upper limit" */
+/* ==========================================================================
+ * SECTION 1: DLL EXPORT
+ * ========================================================================== */
+
+#ifdef _WIN32
+    #define AERO_API __declspec(dllexport)
+#else
+    #define AERO_API
+#endif
+
+/* ==========================================================================
+ * SECTION 2: MATH HELPERS  (no math.h)
+ * ========================================================================== */
+
+static double aero_fabs(double x)
+{
+    return (x < 0.0) ? -x : x;
+}
+
+static double aero_sqrt(double n)
+{
+    double x, y;
+    int i;
+    if (n <= 0.0) return 0.0;
+    x = n;
+    for (i = 0; i < 64; i++) {
+        y = 0.5 * (x + n / x);
+        if (y >= x) break;
+        x = y;
+    }
+    return x;
+}
+
+/* ==========================================================================
+ * SECTION 3: TAX CONSTANTS  (FY 2024-25, amounts in INR)
+ * ========================================================================== */
+
+#define NUM_SLABS       6
+#define REBATE_LIMIT    700000.0
+#define SURCHARGE_10   5000000.0
+#define SURCHARGE_15  10000000.0
+#define CESS_RATE           0.04
+#define STD_DEDUCTION   75000.0
+
+typedef struct { double lower; double upper; double rate; } TaxSlab;
+
+static const TaxSlab SLABS[NUM_SLABS] = {
+    {      0.0,  300000.0, 0.00 },
+    { 300000.0,  600000.0, 0.05 },
+    { 600000.0,  900000.0, 0.10 },
+    { 900000.0, 1200000.0, 0.15 },
+    {1200000.0, 1500000.0, 0.20 },
+    {1500000.0,      -1.0, 0.30 }
 };
-static const int NUM_SLABS = 6;
 
-/* -------------------------------------------------------------------------
- * SECTION 2: TAX LIABILITY CALCULATION
- * ------------------------------------------------------------------------- */
+/* ==========================================================================
+ * SECTION 4: TAX CALCULATION
+ * ========================================================================== */
 
-/**
- * calculate_tax_liability()
- * Calculates net tax payable using Indian New Tax Regime slabs.
- *
- * @param income      Gross annual income in INR
- * @param deductions  Total deductions (Section 80C, 80D, HRA, etc.) in INR
- * @return            Net tax payable after cess (0.0 if rebate applies)
- */
-double calculate_tax_liability(double income, double deductions) {
+static double base_tax_from_slabs(double taxable)
+{
+    double tax = 0.0;
+    int i;
+    for (i = 0; i < NUM_SLABS; i++) {
+        double upper, chunk;
+        if (taxable <= SLABS[i].lower) break;
+        upper = (SLABS[i].upper < 0.0) ? taxable : SLABS[i].upper;
+        chunk = (taxable < upper ? taxable : upper) - SLABS[i].lower;
+        tax  += chunk * SLABS[i].rate;
+    }
+    return tax;
+}
+
+static double add_cess(double base, double gross)
+{
+    double s = 0.0, total;
+    if      (gross > SURCHARGE_15) s = base * 0.15;
+    else if (gross > SURCHARGE_10) s = base * 0.10;
+    total = base + s;
+    return total + total * CESS_RATE;
+}
+
+static double new_regime_tax(double income, double deductions)
+{
+    double taxable;
     if (income <= 0.0) return 0.0;
-
-    /* Step 1: Compute taxable income */
-    double taxable_income = income - deductions;
-    if (taxable_income < 0.0) taxable_income = 0.0;
-
-    /* Step 2: Standard deduction of ₹75,000 (Budget 2024) */
-    taxable_income -= 75000.0;
-    if (taxable_income < 0.0) taxable_income = 0.0;
-
-    /* Step 3: Calculate base tax from slabs */
-    double base_tax = 0.0;
-    for (int i = 0; i < NUM_SLABS; i++) {
-        double upper = (NEW_REGIME_SLABS[i].upper == -1.0)
-                       ? taxable_income
-                       : NEW_REGIME_SLABS[i].upper;
-
-        if (taxable_income <= NEW_REGIME_SLABS[i].lower) break;
-
-        double slab_income = (taxable_income < upper ? taxable_income : upper)
-                             - NEW_REGIME_SLABS[i].lower;
-        base_tax += slab_income * NEW_REGIME_SLABS[i].rate;
-    }
-
-    /* Step 4: Section 87A Rebate — zero tax if taxable income ≤ ₹7L */
-    if (taxable_income <= REBATE_LIMIT) {
-        return 0.0;
-    }
-
-    /* Step 5: Surcharge */
-    double surcharge = 0.0;
-    if (income > SURCHARGE_15) {
-        surcharge = base_tax * 0.15;
-    } else if (income > SURCHARGE_10) {
-        surcharge = base_tax * 0.10;
-    }
-
-    /* Step 6: Health & Education Cess @ 4% */
-    double total_before_cess = base_tax + surcharge;
-    double cess = total_before_cess * CESS_RATE;
-
-    return total_before_cess + cess;
+    taxable = income - deductions - STD_DEDUCTION;
+    if (taxable < 0.0) taxable = 0.0;
+    if (taxable <= REBATE_LIMIT) return 0.0;
+    return add_cess(base_tax_from_slabs(taxable), income);
 }
 
-/* -------------------------------------------------------------------------
- * SECTION 3: OLD REGIME TAX CALCULATION
- * ------------------------------------------------------------------------- */
-
-/**
- * calculate_tax_old_regime()
- * Calculates tax under old regime (with deductions like 80C, 80D, HRA).
- *
- * @param income      Gross annual income in INR
- * @param deductions  Total allowable deductions in INR
- * @return            Net tax payable
- */
-double calculate_tax_old_regime(double income, double deductions) {
-    double taxable_income = income - deductions;
-    if (taxable_income <= 250000.0) return 0.0;
-
-    double base_tax = 0.0;
-
-    if (taxable_income <= 500000.0) {
-        base_tax = (taxable_income - 250000.0) * 0.05;
-    } else if (taxable_income <= 1000000.0) {
-        base_tax = 12500.0 + (taxable_income - 500000.0) * 0.20;
-    } else {
-        base_tax = 112500.0 + (taxable_income - 1000000.0) * 0.30;
-    }
-
-    /* Section 87A rebate for old regime (income ≤ ₹5L) */
-    if (taxable_income <= 500000.0) return 0.0;
-
-    double cess = base_tax * CESS_RATE;
-    return base_tax + cess;
+static double old_regime_tax(double income, double deductions)
+{
+    double taxable = income - deductions;
+    double base    = 0.0;
+    if (taxable <= 250000.0) return 0.0;
+    if      (taxable <= 500000.0)  base = (taxable - 250000.0) * 0.05;
+    else if (taxable <= 1000000.0) base = 12500.0  + (taxable - 500000.0)  * 0.20;
+    else                           base = 112500.0 + (taxable - 1000000.0) * 0.30;
+    if (taxable <= 500000.0) return 0.0;
+    return add_cess(base, income);
 }
 
-/* -------------------------------------------------------------------------
- * SECTION 4: STATISTICAL ANOMALY DETECTION (THREAD-SAFE)
- * ------------------------------------------------------------------------- */
+/* ==========================================================================
+ * SECTION 5: ANOMALY DETECTION
+ * ========================================================================== */
 
-/**
- * AnomalyResult: Returned by detect_outliers()
- * Caller must free() the `flags` array when done.
- */
-typedef struct {
-    int*   flags;        /* 1 = anomaly, 0 = normal (length = size) */
-    int    count;        /* Total number of flagged anomalies */
-    double mean;         /* Mean of the input array */
-    double std_dev;      /* Standard deviation of the input array */
-} AnomalyResult;
+static int *detect_outliers(double *arr, int n, double thresh,
+                             double *out_mean, double *out_std, int *out_count)
+{
+    double sum, comp, mean, sq_sum, std_dev;
+    int *flags;
+    int  i, count;
 
-/* Internal mutex for thread safety on shared state */
-static pthread_mutex_t anomaly_mutex = PTHREAD_MUTEX_INITIALIZER;
+    *out_count = 0;
+    *out_mean  = 0.0;
+    *out_std   = 0.0;
 
-/**
- * detect_outliers()
- * Flags transactions deviating more than `threshold` standard deviations
- * from the mean. Default financial fraud threshold: 3.0 sigma.
- *
- * Algorithm: Two-pass Welford's online algorithm for numerical stability.
- *
- * @param transactions  Pointer to array of transaction amounts
- * @param size          Number of transactions
- * @param threshold     Sigma threshold (e.g., 3.0 for 99.7% confidence)
- * @return              AnomalyResult struct (caller must free flags)
- */
-AnomalyResult detect_outliers(double* transactions, int size, double threshold) {
-    AnomalyResult result = {NULL, 0, 0.0, 0.0};
+    if (!arr || n <= 0) return 0;
 
-    if (!transactions || size <= 0) return result;
+    flags = (int *)aero_calloc(n, sizeof(int));
+    if (!flags) return 0;
 
-    /* Allocate flags array */
-    result.flags = (int*)calloc(size, sizeof(int));
-    if (!result.flags) return result;
-
-    /* Pass 1: Compute mean (Kahan compensated summation for precision) */
-    double sum = 0.0, comp = 0.0;
-    for (int i = 0; i < size; i++) {
-        double y = transactions[i] - comp;
+    /* Kahan-compensated mean */
+    sum = 0.0; comp = 0.0;
+    for (i = 0; i < n; i++) {
+        double y = arr[i] - comp;
         double t = sum + y;
         comp = (t - sum) - y;
-        sum = t;
+        sum  = t;
     }
-    double mean = sum / (double)size;
+    mean = sum / (double)n;
 
-    /* Pass 2: Compute variance (Bessel's correction for sample std dev) */
-    double sq_sum = 0.0;
-    for (int i = 0; i < size; i++) {
-        double diff = transactions[i] - mean;
-        sq_sum += diff * diff;
+    /* Sample std deviation with Bessel's correction */
+    sq_sum = 0.0;
+    for (i = 0; i < n; i++) {
+        double d = arr[i] - mean;
+        sq_sum += d * d;
     }
-    double std_dev = (size > 1) ? sqrt(sq_sum / (double)(size - 1)) : 0.0;
+    std_dev = (n > 1) ? aero_sqrt(sq_sum / (double)(n - 1)) : 0.0;
 
-    /* Thread-safe flag writing */
-    pthread_mutex_lock(&anomaly_mutex);
-    int count = 0;
-    for (int i = 0; i < size; i++) {
-        double z_score = (std_dev > 1e-9) ? fabs(transactions[i] - mean) / std_dev : 0.0;
-        if (z_score > threshold) {
-            result.flags[i] = 1;
-            count++;
-        }
+    count = 0;
+    for (i = 0; i < n; i++) {
+        double z = (std_dev > 1e-9) ? aero_fabs(arr[i] - mean) / std_dev : 0.0;
+        if (z > thresh) { flags[i] = 1; count++; }
     }
-    result.count  = count;
-    result.mean   = mean;
-    result.std_dev = std_dev;
-    pthread_mutex_unlock(&anomaly_mutex);
 
-    return result;
+    *out_mean  = mean;
+    *out_std   = std_dev;
+    *out_count = count;
+    return flags;
 }
 
-/**
- * free_anomaly_result()
- * Convenience function to free heap memory from AnomalyResult.
- */
-void free_anomaly_result(AnomalyResult* result) {
-    if (result && result->flags) {
-        free(result->flags);
-        result->flags = NULL;
-    }
+/* ==========================================================================
+ * SECTION 6: PUBLIC API  (Python ctypes entry points)
+ * ========================================================================== */
+
+AERO_API double py_calculate_tax(double income, double deductions)
+{
+    return new_regime_tax(income, deductions);
 }
 
-/* -------------------------------------------------------------------------
- * SECTION 5: CTYPES-FRIENDLY FLAT API (no structs across FFI boundary)
- * These are the functions Python ctypes will call directly.
- * ------------------------------------------------------------------------- */
+AERO_API int py_detect_outliers(double *transactions, int size,
+                                double  threshold,
+                                int    *out_flags,
+                                double *out_mean,
+                                double *out_std)
+{
+    double mean = 0.0, std = 0.0;
+    int    count = 0, i;
+    int   *flags = detect_outliers(transactions, size, threshold,
+                                   &mean, &std, &count);
+    if (!flags) return -1;
 
-/**
- * py_calculate_tax()
- * Flat C function for Python ctypes. Returns net tax as double.
- */
-double py_calculate_tax(double income, double deductions) {
-    return calculate_tax_liability(income, deductions);
-}
-
-/**
- * py_detect_outliers()
- * Flat C function for Python ctypes.
- * Writes 1/0 into the `out_flags` array (pre-allocated by Python).
- * Returns number of anomalies found.
- *
- * @param transactions  Input array of doubles
- * @param size          Length of input array
- * @param threshold     Z-score threshold (3.0 recommended)
- * @param out_flags     Pre-allocated int array of length `size`
- * @param out_mean      Pointer to write mean value
- * @param out_std       Pointer to write std deviation value
- */
-int py_detect_outliers(double* transactions, int size, double threshold,
-                        int* out_flags, double* out_mean, double* out_std) {
-    AnomalyResult r = detect_outliers(transactions, size, threshold);
-    if (!r.flags) return -1;
-
-    memcpy(out_flags, r.flags, size * sizeof(int));
-    if (out_mean) *out_mean = r.mean;
-    if (out_std)  *out_std  = r.std_dev;
-    int count = r.count;
-    free_anomaly_result(&r);
+    for (i = 0; i < size; i++) out_flags[i] = flags[i];
+    if (out_mean) *out_mean = mean;
+    if (out_std)  *out_std  = std;
+    free(flags);
     return count;
 }
 
-/**
- * py_compare_regimes()
- * Returns 1 if new regime is better, 0 if old regime is better.
- * Writes both tax amounts to out_new and out_old.
- */
-int py_compare_regimes(double income, double deductions,
-                        double* out_new, double* out_old) {
-    double new_tax = calculate_tax_liability(income, deductions);
-    double old_tax = calculate_tax_old_regime(income, deductions);
-    if (out_new) *out_new = new_tax;
-    if (out_old) *out_old = old_tax;
-    return (new_tax <= old_tax) ? 1 : 0;
+AERO_API int py_compare_regimes(double  income,   double  deductions,
+                                double *out_new,  double *out_old)
+{
+    double n = new_regime_tax(income, deductions);
+    double o = old_regime_tax(income, deductions);
+    if (out_new) *out_new = n;
+    if (out_old) *out_old = o;
+    return (n <= o) ? 1 : 0;
 }
