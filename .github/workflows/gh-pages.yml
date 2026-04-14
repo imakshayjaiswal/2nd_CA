@@ -26,7 +26,7 @@ jobs:
       - name: Build Frontend
         env:
           TRUNK_SKIP_WASM_OPT: "true"
-          RUSTFLAGS: "-C target-feature=-bulk-memory"
+          RUSTFLAGS: "-C target-feature=+bulk-memory"
         run: |
           cd frontend
           trunk build --release --public-url /2nd_CA/
