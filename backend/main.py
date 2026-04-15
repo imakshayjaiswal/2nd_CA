@@ -23,8 +23,14 @@ import numpy as np
 import pandas as pd
 from fastapi import FastAPI, File, UploadFile, HTTPException, BackgroundTasks
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, FileResponse
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
+
+# ──────────────────────────────────────────────────────────────
+# GLOBAL PATHS
+# ──────────────────────────────────────────────────────────────
+frontend_dist = Path(__file__).parent.parent / "frontend" / "dist"
 
 # ──────────────────────────────────────────────────────────────
 # LOGGING
@@ -247,6 +253,9 @@ def c_detect_outliers(transactions: list[float], threshold: float):
 
 @app.get("/", tags=["Health"])
 async def root():
+    index_path = frontend_dist / "index.html"
+    if index_path.exists():
+        return FileResponse(index_path)
     return {
         "status": "🚀 AeroTax API Online",
         "engine": "C-native" if ENGINE else "Python-fallback",
@@ -379,3 +388,44 @@ async def detect_anomalies(req: AnomalyRequest):
         "summary": {"mean": round(mean, 2), "std_dev": round(std, 2), "anomalies": count},
         "transactions": results,
     }
+# ──────────────────────────────────────────────────────────────
+# SECTION 8: SERVE SPA ASSET FALLBACK
+# ──────────────────────────────────────────────────────────────
+
+# MIME type map for static assets
+MIME_TYPES = {
+    ".wasm": "application/wasm",
+    ".js":   "application/javascript",
+    ".css":  "text/css",
+    ".html": "text/html",
+    ".json": "application/json",
+    ".png":  "image/png",
+    ".svg":  "image/svg+xml",
+    ".ico":  "image/x-icon",
+}
+
+@app.get("/api/health", tags=["Health"])
+async def api_health():
+    return {
+        "status": "🚀 AeroTax API Online",
+        "engine": "C-native" if ENGINE else "Python-fallback",
+        "version": "1.0.0",
+    }
+
+if frontend_dist.exists():
+    log.info(f"📂 Serving frontend from {frontend_dist}")
+
+    @app.get("/{full_path:path}")
+    async def serve_spa(full_path: str):
+        # If the path looks like a file, try to serve it from dist
+        potential_file = frontend_dist / full_path
+        if potential_file.is_file():
+            suffix = potential_file.suffix.lower()
+            media_type = MIME_TYPES.get(suffix)
+            return FileResponse(potential_file, media_type=media_type)
+
+        # Otherwise, serve index.html for SPA routing
+        return FileResponse(frontend_dist / "index.html", media_type="text/html")
+else:
+    log.warning(f"⚠️ Frontend dist not found at {frontend_dist}. UI will not be served.")
+

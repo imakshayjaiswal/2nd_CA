@@ -48,7 +48,7 @@ pub fn App() -> impl IntoView {
         <Meta name="description" content="AeroTax: Instant AI tax optimization, audit detection, and invoice processing for India — powered by Gemini AI and real-time C computation."/>
 
         // Leptos Router for SPA navigation
-        <Router base="/2nd_CA">
+        <Router base="">
             <div class="aerotax-shell">
                 // ── Navigation ──
                 <NavBar />
@@ -56,7 +56,7 @@ pub fn App() -> impl IntoView {
                 // ── Route Views ──
                 <main class="main-content">
                     <Routes>
-                        <Route path="/"         view=DashboardPage />
+                        <Route path=""         view=DashboardPage />
                         <Route path="/audit"    view=AuditPage />
                         <Route path="/news"     view=NewsPage />
                         <Route path="/upload"   view=UploadPage />
@@ -128,7 +128,7 @@ fn NotFound() -> impl IntoView {
         <div class="page-container fade-in" style="text-align:center; padding-top:10rem;">
             <h1 class="glow-text">"404"</h1>
             <p class="subtitle">"This tax break doesn't exist."</p>
-            <a href="/2nd_CA/" class="btn-primary">"Return to Dashboard"</a>
+            <a href="/" class="btn-primary">"Return to Dashboard"</a>
         </div>
     }
 }
