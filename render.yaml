@@ -12,5 +12,9 @@ services:
       - key: PYTHON_VERSION
         value: 3.12.10
       - key: GEMINI_API_KEY
-        sync: false # Set this in Render dashboard
+        sync: false
+      - key: PINECONE_API_KEY
+        sync: false
+      - key: APP_ENV
+        value: production
     rootDirectory: .

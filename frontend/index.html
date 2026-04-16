@@ -45,8 +45,14 @@
     });
 
     // Production API URL Hook
-    // Replace this with your actual Render/Backend URL once deployed
+    // When deployed, this should point to your Render backend URL
     window.AEROTAX_API_URL = window.AEROTAX_API_URL || "http://localhost:8000";
+
+    if (window.location.hostname !== "localhost" && window.location.hostname !== "127.0.0.1") {
+      // Replace this with your actual Render URL (e.g., https://aerotax-backend.onrender.com)
+      window.AEROTAX_API_URL = "https://aerotax-backend.onrender.com";
+    }
+    console.log("🚀 AeroTax API URL:", window.AEROTAX_API_URL);
   </script>
 </body>
 </html>

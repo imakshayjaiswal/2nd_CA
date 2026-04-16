@@ -19,8 +19,12 @@ import logging
 from pathlib import Path
 from typing import Optional
 
-import numpy as np
-import pandas as pd
+try:
+    import numpy as np
+    import pandas as pd
+except ImportError:
+    np = None
+    pd = None
 from fastapi import FastAPI, File, UploadFile, HTTPException, BackgroundTasks
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse, FileResponse
@@ -304,6 +308,9 @@ async def analyze_ledger(file: UploadFile = File(...)):
     """
     if not file.filename.endswith(".csv"):
         raise HTTPException(400, "Only CSV files are accepted.")
+
+    if pd is None:
+        raise HTTPException(500, "Pandas is not installed. Audit engine unavailable.")
 
     content = await file.read()
     try:

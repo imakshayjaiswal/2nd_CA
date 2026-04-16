@@ -10,8 +10,8 @@
   <!-- Trunk picks up these data-trunk directives automatically -->
   
 <script type="module">
-import init, * as bindings from '/aerotax-d7071731bc93a4b2.js';
-const wasm = await init({ module_or_path: '/aerotax-d7071731bc93a4b2_bg.wasm' });
+import init, * as bindings from '/aerotax-c6e253e638e3b584.js';
+const wasm = await init({ module_or_path: '/aerotax-c6e253e638e3b584_bg.wasm' });
 
 
 window.wasmBindings = bindings;
@@ -24,7 +24,7 @@ dispatchEvent(new CustomEvent("TrunkApplicationStarted", {detail: {wasm}}));
 
   <!-- Favicon (emoji fallback) -->
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚡</text></svg>" />
-<link rel="modulepreload" href="/aerotax-d7071731bc93a4b2.js" crossorigin="anonymous" integrity="sha384-Kw0H0Ago5eTbsEbmH+ImzjKfQghcays7XllpnTVcAXPiUynird6tV23eaFOC1PNS"><link rel="preload" href="/aerotax-d7071731bc93a4b2_bg.wasm" crossorigin="anonymous" integrity="sha384-pJ6EriGs/7HL9PnUKWs57Gnuu6ylOrIAaN/bt3tAZRgiUqgFhbdM4U4qJ77J46Fv" as="fetch" type="application/wasm"></head>
+<link rel="modulepreload" href="/aerotax-c6e253e638e3b584.js" crossorigin="anonymous"><link rel="preload" href="/aerotax-c6e253e638e3b584_bg.wasm" crossorigin="anonymous" as="fetch" type="application/wasm"></head>
 <body>
   <!-- Leptos mounts here via mount_to_body() -->
   <!-- Loading splash (hidden once WASM loads) -->
@@ -56,8 +56,14 @@ dispatchEvent(new CustomEvent("TrunkApplicationStarted", {detail: {wasm}}));
     });
 
     // Production API URL Hook
-    // Replace this with your actual Render/Backend URL once deployed
+    // When deployed, this should point to your Render backend URL
     window.AEROTAX_API_URL = window.AEROTAX_API_URL || "http://localhost:8000";
+
+    if (window.location.hostname !== "localhost" && window.location.hostname !== "127.0.0.1") {
+      // Replace this with your actual Render URL (e.g., https://aerotax-backend.onrender.com)
+      window.AEROTAX_API_URL = "https://aerotax-backend.onrender.com";
+    }
+    console.log("🚀 AeroTax API URL:", window.AEROTAX_API_URL);
   </script>
 <script>
     // Trunk live-reload removed for production serving

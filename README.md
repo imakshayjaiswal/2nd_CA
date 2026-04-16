@@ -48,6 +48,29 @@ AeroTax is a high-performance, AI-driven tax optimization and audit detection pl
    trunk serve
    ```
 
+## 🚢 Deployment Guide
+
+AeroTax is designed for split deployment: **Frontend (GitHub Pages)** and **Backend (Render)**.
+
+### 1. Backend (Render)
+1.  Sign in to [Render](https://render.com).
+2.  Create a **New Web Service** and connect this repository.
+3.  Render will automatically pick up the `render.yaml` configuration.
+4.  In the **Environment** tab, add your secrets:
+    - `GEMINI_API_KEY`: Your Google AI key.
+    - `PINECONE_API_KEY`: Your Pinecone key.
+5.  Wait for the build to finish. Copy your new Render URL (e.g., `https://aerotax-backend.onrender.com`).
+
+### 2. Frontend (GitHub Pages)
+1.  Go to your GitHub Repository **Settings > Actions > General**.
+2.  Under **Workflow permissions**, select **Read and write permissions** (required for the deploy tool).
+3.  Go to `frontend/index.html` and update the `window.AEROTAX_API_URL` block with your Render URL if you aren't using the automatic detection.
+4.  Push any change to the `main` branch. GitHub Actions will build and deploy the WASM frontend to the `gh-pages` branch.
+5.  In **Settings > Pages**, set the source to the `gh-pages` branch.
+
+### 3. Verification
+Access your live app at `https://<your-username>.github.io/2nd_CA/`.
+
 ## 📜 License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
